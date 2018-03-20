@@ -3,7 +3,7 @@
 //ofstream --> Stream class to write file
 //ifstream --> Stream class to read from file
 //fstream --> Stream class to both read and write from/to file
-#include <pthread.h>
+#include <thread>
 #include <string>
 #include <vector>
 
@@ -13,33 +13,31 @@ void main (){
 	ifstream file ("pbs_input.txt");
 	
 	bool flag1, flag2; //to indicate which queue of process is active or expired
+	int arrival_time;
+	int burst;
+	int priority;
+	string PID;
 
-	vector <int> processQ1; //queues for locating processes
-	vector <int> processQ2;
-	vector <string> PIDVector;
-
-	struct parameters {
-		string PID;
-		int arrival_time;
-		int burst;
-		int priority;
+	struct process {
+		string processID;
+		int arriveTime;
+		int burstTime;
+		int priorityOfProcess;
 	};
 
-	parameters process;
-
-	//vector <int> arriveVector;
-	//vector <int> burstVector;
-	//vector <int> priorityVector;
+	process *p = new process[sizeof(process)];
+	vector <process> PIDVector;
+	vector <process> processQ1; //queues for locating processes, both needs to be sorted using the priorities
+	vector <process> processQ2;
 	
 	if(file.is_open()){ //If the file is opened
-		while (file >> PID >> arrival_time >> burst >> priority){
-			PIDVector.push_back(PID);
+		while (file >> PID >> arrival_time >> burst >> priority){
 
-			//arriveVector.push_back(arrival_time);
-			//burstVector.push_back(burst);
-			//priorityVector.push_back(priority);
-			
-			/*Chaque index des vectors represente infos d'un Process*/
+			p->processID = PID;
+			p->arriveTime = arrival_time;
+			p->burstTime = burst;
+			p->priorityOfProcess = priority;
+			PIDVector.push_back(*p);
 		}
 		file.close();
 	}
