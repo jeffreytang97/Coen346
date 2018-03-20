@@ -15,14 +15,14 @@ using namespace std;
 class Process {
 
 private:
-	string PID;
+	int PID;
 	int arrival_time;
 	int burst;
 	int priority;
 	int timeQuantum;
 
 public:
-	Process(string thePID, int theArrivalTime, int theBurst, int thePriority, int theTimeQuantum) { //Constructor
+	Process(int thePID, int theArrivalTime, int theBurst, int thePriority, int theTimeQuantum) { //Constructor
 		PID = thePID;
 		arrival_time = theArrivalTime;
 		burst = theBurst;
@@ -30,12 +30,22 @@ public:
 		timeQuantum = theTimeQuantum;
 	}
 
-	string getPID() { return PID; }
+	int getPID() { return PID; }
 
+	//Get methods
 	int getArrival() { return arrival_time; }
 	int getBurst() { return burst; }
 	int getPriority() { return priority; }
 	int getTimeQ() { return timeQuantum; }
+
+	int newTimeQ(int prio) {
+		int Tq;
+		if (prio < 100) {
+			Tq = (140 - prio) * 20;
+			return 
+		}
+	}
+
 };
 
 
