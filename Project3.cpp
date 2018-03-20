@@ -20,6 +20,8 @@ void main (){
 	vector <int> arriveVector;
 	vector <int> burstVector;
 	vector <int> priorityVector
+
+		cout << "Jeffrey Tang is beautiful --- TEST for git!";
 	
 	if(file.is_open()){ //If the file is opened
 		while (file >> PID >> arrival_time >> burst >> priority){
