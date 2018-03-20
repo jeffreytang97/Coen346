@@ -6,8 +6,38 @@
 #include <thread>
 #include <string>
 #include <vector>
+#include <math.h>
+#include <ctime>
+#include <cstdlib>
 
 using namespace std;
+
+class Process {
+
+private:
+	string PID;
+	int arrival_time;
+	int burst;
+	int priority;
+	int timeQuantum;
+
+public:
+	Process(string thePID, int theArrivalTime, int theBurst, int thePriority, int theTimeQuantum) { //Constructor
+		PID = thePID;
+		arrival_time = theArrivalTime;
+		burst = theBurst;
+		priority = thePriority;
+		timeQuantum = theTimeQuantum;
+	}
+
+	string getPID() { return PID;}
+
+	int getArrival() { return arrival_time; }
+	int getBurst() { return burst;}
+	int getPriority() { return priority;}
+	int getTimeQ() { return timeQuantum;}
+};
+
 
 void main (){
 	ifstream file ("pbs_input.txt");
@@ -45,3 +75,4 @@ void main (){
 		cout << "File is not open" << endl;
 	}
 }
+
