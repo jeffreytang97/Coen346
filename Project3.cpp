@@ -30,18 +30,18 @@ public:
 		timeQuantum = theTimeQuantum;
 	}
 
-	string getPID() { return PID;}
+	string getPID() { return PID; }
 
 	int getArrival() { return arrival_time; }
-	int getBurst() { return burst;}
-	int getPriority() { return priority;}
-	int getTimeQ() { return timeQuantum;}
+	int getBurst() { return burst; }
+	int getPriority() { return priority; }
+	int getTimeQ() { return timeQuantum; }
 };
 
 
-void main (){
-	ifstream file ("pbs_input.txt");
-	
+void main() {
+	ifstream file("pbs_input.txt");
+
 	bool flag1, flag2; //to indicate which queue of process is active or expired
 	int arrival_time;
 	int burst;
@@ -59,9 +59,9 @@ void main (){
 	vector <process> PIDVector;
 	vector <process> processQ1; //queues for locating processes, both needs to be sorted using the priorities
 	vector <process> processQ2;
-	
-	if(file.is_open()){ //If the file is opened
-		while (file >> PID >> arrival_time >> burst >> priority){
+
+	if (file.is_open()) { //If the file is opened
+		while (file >> PID >> arrival_time >> burst >> priority) {
 
 			p->processID = PID;
 			p->arriveTime = arrival_time;
@@ -71,7 +71,7 @@ void main (){
 		}
 		file.close();
 	}
-	else{
+	else {
 		cout << "File is not open" << endl;
 	}
 }
