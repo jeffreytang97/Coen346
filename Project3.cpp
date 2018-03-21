@@ -25,7 +25,6 @@ private:
 	int waitTime;
 
 public:
-<<<<<<< HEAD
 	//Default constructor
 	Process() {
 		PID = 0;
@@ -36,10 +35,7 @@ public:
 	}
 
 	//Constructor
-	Process(int thePID, int theArrivalTime, int theBurst, int thePriority, int theTimeQuantum) { 
-=======
-	Process(int thePID, int theArrivalTime, int theBurst, int thePriority, int theTimeQuantum, int theWaitTime) { //Constructor
->>>>>>> 69e75485bf5fb103f4d417de25405b50b363174a
+	Process(int thePID, int theArrivalTime, int theBurst, int thePriority, int theTimeQuantum, int theWaitTime) { 
 		PID = thePID;
 		arrival_time = theArrivalTime;
 		burst = theBurst;
@@ -48,11 +44,7 @@ public:
 		waitTime = theWaitTime;
 	}
 
-<<<<<<< HEAD
-	//get functions
-=======
 	//Get Function
->>>>>>> 69e75485bf5fb103f4d417de25405b50b363174a
 	int getPID() { return PID; }
 	int getArrival() { return arrival_time; }
 	int getBurst() { return burst; }
@@ -82,7 +74,6 @@ public:
 
 };
 
-
 void main() {
 	ifstream file("pbs_input.txt");
 
@@ -99,10 +90,10 @@ void main() {
 	if (file.is_open()) { //If the file is opened
 		while (file >> PID >> arrival_time >> burst >> priority) {
 			Process p = Process();
-			p.getPID = PID;
-			p.getArrival = arrival_time;    
-			p.getBurst = burst;
-			p.getPriority = priority;
+			p.getPID() = PID;
+			p.getArrival() = arrival_time;    
+			p.getBurst() = burst;
+			p.getPriority() = priority;
 			processVector.push_back(p);
 		}  
 		file.close();    
