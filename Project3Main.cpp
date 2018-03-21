@@ -45,3 +45,15 @@ void main() {
 	}
 }
 
+bool checkActiveOrNot(vector<Process> queue) {
+	
+	bool flag;
+
+	if (queue.empty())
+		flag = false;
+	else
+		flag = true;
+
+	return flag;
+}
+
