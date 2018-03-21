@@ -6,24 +6,24 @@ Use threads.
 
 To do list / additional notes:
 
-- Sorting algorithm for both active and expired queues (bubble sort) depending on priority (increasing order) -- Jeff
+-[ ] Sorting algorithm for both active and expired queues (bubble sort) depending on priority (increasing order) -- Jeff
 	-Sort the PIDVector so when we insert in the queues, we inserted from the back so it is sorted
 
-- Time quantum (Tq) function using the equations -- Hong 
+-[x] Time quantum (Tq) function using the equations -- Hong 
 
-- Priority update function, when process having been granted 2 successive time quanta -- Hong
+-[x] Priority update function, when process having been granted 2 successive time quanta -- Hong
 
-- Insert process from PIDVector in queues function -- Hong
+-[ ] Insert process from PIDVector in queues function -- Hong
 
-- Function that checks which which queue is active -- Jeff
+-[ ] Function that checks which which queue is active -- Jeff
 	- When queue flagged as active is empty, change flags of both queues and start execution for new active queue.
 	- return type is a vector
 
-- Convert input files reading to function -- Jeff
+-[ ] Convert input files reading to function -- Jeff
 
-- execution of processes in the main
+-[ ] execution of processes in the main
 
-- output file
+-[ ] output file
 	If-else:
 	- Started, paused, arrived, resumed and terminated.
 	- paused if process not completed when (burst time - time quanta) != 0.
