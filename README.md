@@ -23,6 +23,8 @@ To do list / additional notes:
 
 - [ ] execution of processes in the main
 
+- [ ] scheduler and addToQueue function
+
 - [ ] output file
 	If-else:
 	- Started, paused, arrived, resumed and terminated.

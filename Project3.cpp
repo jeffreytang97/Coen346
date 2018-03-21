@@ -14,63 +14,125 @@
 
 using namespace std;
 
-//Default constructor
-Process::Process() {
-	PID = 0;
-	arrival_time = 0;
-	burst = 0;
-	priority = 0;
-	timeQuantum = 0;
-}
+class Process {
 
-//Constructor
-Process::Process(int thePID, int theArrivalTime, int theBurst, int thePriority, int theTimeQuantum, int theWaitTime) {
-	PID = thePID;
-	arrival_time = theArrivalTime;
-	burst = theBurst;
-	priority = thePriority;
-	timeQuantum = theTimeQuantum;
-	waitTime = theWaitTime;
-}
+private:
+	int PID;
+	int arrival_time;
+	int burst;
+	int priority;
+	int timeQuantum;
+	int waitTime;
 
-//Get Function
-int Process::getPID() { return PID; }
-int Process::getArrival() { return arrival_time; }
-int Process::getBurst() { return burst; }
-int Process::getPriority() { return priority; }
-int Process::getTimeQ() { return timeQuantum; }
-int Process::getWaitTime() { return waitTime; }
-
-int Process::newTimeQ(int prio) { //Updated TimeQuantum
-	int Tq;
-	if (prio < 100) {
-		Tq = (140 - prio) * 20;
-		return Tq;
+public:
+	//Default constructor
+	Process() {
+		PID = 0;
+		arrival_time = 0;
+		burst = 0;
+		priority = 0;
+		timeQuantum = 0;
 	}
-	else
-	{
-		Tq = (140 - prio) * 5;
-		return Tq;
+
+	//Constructor
+	Process(int thePID, int theArrivalTime, int theBurst, int thePriority, int theTimeQuantum, int theWaitTime) {
+		PID = thePID;
+		arrival_time = theArrivalTime;
+		burst = theBurst;
+		priority = thePriority;
+		timeQuantum = theTimeQuantum;
+		waitTime = theWaitTime;
 	}
-}
 
-int Process::priorityUpdate(int waitTime, int currentTime, int arrivalTime, int oldPriority) {
-	int totalWait = waitTime;
-	int bonus = ceil(10 * totalWait / (currentTime - arrivalTime));
-	int newPriority = max(100, min(oldPriority - bonus + 5, 139));
-	return newPriority;
-}
+	//Get Function
+	int getPID() { return PID; }
+	int getArrival() { return arrival_time; }
+	int getBurst() { return burst; }
+	int getPriority() { return priority; }
+	int getTimeQ() { return timeQuantum; }
+	int getWaitTime() { return waitTime; }
 
-void Process::sortingFunction(vector <Process> Q) {
-
-	int size = Q.size();
-	for (int i = 0; i < size - 1; i++)
-		// Last i elements are already in place   
-		for (int j = 0; j < size - i - 1; j++) {
-			if (Q[j].getPriority() > Q[j + 1].getPriority()) {
-				Process temp = Q[j];
-				Q[j] = Q[j + 1];
-				Q[j + 1] = temp;
-			}
+	int newTimeQ(int prio) { //Updated TimeQuantum
+		int Tq;
+		if (prio < 100) {
+			Tq = (140 - prio) * 20;
+			return Tq;
 		}
+		else
+		{
+			Tq = (140 - prio) * 5;
+			return Tq;
+		}
+	}
+
+	int priorityUpdate(int waitTime, int currentTime, int arrivalTime, int oldPriority) {
+		int totalWait = waitTime;
+		int bonus = ceil(10 * totalWait / (currentTime - arrivalTime));
+		int newPriority = max(100, min(oldPriority - bonus + 5, 139));
+		return newPriority;
+	}
+
+	void sortingFunction(vector <Process> Q) {
+
+		int size = Q.size();
+		for (int i = 0; i < size - 1; i++)
+			// Last i elements are already in place   
+			for (int j = 0; j < size - i - 1; j++) {
+				if (Q[j].getPriority() > Q[j + 1].getPriority()) {
+					Process temp = Q[j];
+					Q[j] = Q[j + 1];
+					Q[j + 1] = temp;
+				}
+			}
+	}
+
+	void start(int);
+	void paused(int);
+	void arrived(int);
+	void resumed(int);
+	void terminated(int);
+	void addToQueue();
+	void scheduler();
+};
+
+
+void main() {
+	ifstream file("pbs_input.txt");
+
+	bool flag1, flag2; //to indicate which queue of process is active or expired
+	int arrival_time;
+	int burst;
+	int priority;
+	string PID;
+
+	vector <Process> processVector;
+	vector <Process> processQ1; //queues for locating processes, both needs to be sorted using the priorities
+	vector <Process> processQ2;
+
+	if (file.is_open()) { //If the file is opened
+		while (file >> PID >> arrival_time >> burst >> priority) {
+			Process p = Process();
+			p.getPID() = PID;
+			p.getArrival() = arrival_time;
+			p.getBurst() = burst;
+			p.getPriority() = priority;
+			processVector.push_back(p);
+		}
+		file.close();
+	}
+	else {
+		cout << "File is not open" << endl;
+	}
+}
+
+bool checkActiveOrNot(vector<Process> queue) {
+
+	bool flag;
+
+	if (queue.empty())
+		flag = false;
+	else
+		flag = true;
+
+	return flag;
 }
