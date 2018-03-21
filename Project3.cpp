@@ -9,6 +9,7 @@
 #include <math.h>
 #include <ctime>
 #include <cstdlib>
+#include <algorithm>
 
 using namespace std;
 
@@ -21,7 +22,10 @@ private:
 	int priority;
 	int timeQuantum;
 
+	int waitTime;
+
 public:
+<<<<<<< HEAD
 	//Default constructor
 	Process() {
 		PID = 0;
@@ -33,26 +37,47 @@ public:
 
 	//Constructor
 	Process(int thePID, int theArrivalTime, int theBurst, int thePriority, int theTimeQuantum) { 
+=======
+	Process(int thePID, int theArrivalTime, int theBurst, int thePriority, int theTimeQuantum, int theWaitTime) { //Constructor
+>>>>>>> 69e75485bf5fb103f4d417de25405b50b363174a
 		PID = thePID;
 		arrival_time = theArrivalTime;
 		burst = theBurst;
 		priority = thePriority;
 		timeQuantum = theTimeQuantum;
+		waitTime = theWaitTime;
 	}
 
+<<<<<<< HEAD
 	//get functions
+=======
+	//Get Function
+>>>>>>> 69e75485bf5fb103f4d417de25405b50b363174a
 	int getPID() { return PID; }
 	int getArrival() { return arrival_time; }
 	int getBurst() { return burst; }
 	int getPriority() { return priority; }
 	int getTimeQ() { return timeQuantum; }
+	int getWaitTime() { return waitTime; }
 
-	int newTimeQ(int prio) {
+	int newTimeQ(int prio) { //Updated TimeQuantum
 		int Tq;
 		if (prio < 100) {
 			Tq = (140 - prio) * 20;
-			return 
+			return Tq;
 		}
+		else
+		{
+			Tq = (140 - prio) * 5;
+			return Tq;
+		}
+	}
+
+	int priorityUpdate(int waitTime, int currentTime, int arrivalTime, int oldPriority) {
+		int totalWait = waitTime;
+		int bonus = ceil(10 * totalWait / (currentTime - arrivalTime));
+		int newPriority = max(100, min(oldPriority - bonus + 5, 139));
+		return newPriority;
 	}
 
 };
