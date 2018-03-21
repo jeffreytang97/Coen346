@@ -25,12 +25,13 @@ private:
 	int waitTime;
 
 public:
-	Process(int thePID, int theArrivalTime, int theBurst, int thePriority, int theTimeQuantum) { //Constructor
+	Process(int thePID, int theArrivalTime, int theBurst, int thePriority, int theTimeQuantum, int theWaitTime) { //Constructor
 		PID = thePID;
 		arrival_time = theArrivalTime;
 		burst = theBurst;
 		priority = thePriority;
 		timeQuantum = theTimeQuantum;
+		waitTime = theWaitTime;
 	}
 
 	//Get Function
