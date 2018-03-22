@@ -14,6 +14,8 @@
 
 using namespace std;
 
+int numberOfProcess = 0;
+
 class Process {
 
 private:
@@ -92,9 +94,20 @@ public:
 	void resumed(int);
 	void terminated(int);
 	void addToQueue();
-	void scheduler();
+
 };
 
+void scheduler(vector <Process> Q1, vector <Process> Q2, bool flag, int currentTime, vector <Process> allProcess) {
+	if (numberOfProcess == 0) {
+		return;
+	}
+	else if (!flag) {
+		for (int i = 0; i < allProcess.size - 1; i++)
+		{
+			if()
+		}
+	}
+}
 
 void main() {
 	ifstream file("pbs_input.txt");
@@ -125,14 +138,4 @@ void main() {
 	}
 }
 
-bool checkActiveOrNot(vector<Process> queue) {
 
-	bool flag;
-
-	if (queue.empty())
-		flag = false;
-	else
-		flag = true;
-
-	return flag;
-}
