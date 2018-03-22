@@ -10,11 +10,11 @@
 #include <ctime>
 #include <cstdlib>
 #include <algorithm>
-#include "Project3.h"
 
 using namespace std;
 
 int numberOfProcess = 0;
+int currentVectorPosition = 0;
 
 class Process {
 
@@ -23,8 +23,10 @@ private:
 	int arrival_time;
 	int burst;
 	int priority;
-	int timeQuantum;
-	int waitTime;
+	int timeQuantum = 0;
+	int waitTime = 0;
+	int lastFinish = 0;
+	string status = "";
 
 public:
 	//Default constructor
@@ -33,17 +35,14 @@ public:
 		arrival_time = 0;
 		burst = 0;
 		priority = 0;
-		timeQuantum = 0;
 	}
 
 	//Constructor
-	Process(int thePID, int theArrivalTime, int theBurst, int thePriority, int theTimeQuantum, int theWaitTime) {
+	Process(int thePID, int theArrivalTime, int theBurst, int thePriority) {
 		PID = thePID;
 		arrival_time = theArrivalTime;
 		burst = theBurst;
 		priority = thePriority;
-		timeQuantum = theTimeQuantum;
-		waitTime = theWaitTime;
 	}
 
 	//Get Function
@@ -54,17 +53,11 @@ public:
 	int getTimeQ() { return timeQuantum; }
 	int getWaitTime() { return waitTime; }
 
-	int newTimeQ(int prio) { //Updated TimeQuantum
-		int Tq;
-		if (prio < 100) {
-			Tq = (140 - prio) * 20;
-			return Tq;
-		}
+	void newTimeQ(int prio) { //Updated TimeQuantum
+		if (prio < 100) 
+			timeQuantum = (140 - prio) * 20;
 		else
-		{
-			Tq = (140 - prio) * 5;
-			return Tq;
-		}
+			timeQuantum = (140 - prio) * 5;
 	}
 
 	int priorityUpdate(int waitTime, int currentTime, int arrivalTime, int oldPriority) {
@@ -88,14 +81,34 @@ public:
 			}
 	}
 
-	void start(int);
-	void paused(int);
-	void arrived(int);
-	void resumed(int);
-	void terminated(int);
-	void addToQueue();
+	void start(int currentTime) {
+		burst = burst - timeQuantum;
+		cout << "Time " << currentTime << ", P" << PID << ", Started, Granted " << timeQuantum << endl;
+	}
+
+	void paused(int currentTime) {
+		cout << "Time " << currentTime << ", P" << PID << ", Paused" << endl;
+	}
+
+	void arrived(int currentTime) {
+		cout << "Time " << currentTime << ", P" << PID << ", Arrived" << endl;
+	}
+	void resumed(int currentTime) {
+		waitTime = currentTime - lastFinish;
+		burst = burst - timeQuantum;
+		cout << "Time " << currentTime << ", P" << PID << ", Started, Granted " << timeQuantum << endl;
+	}
+	void terminated(int currentTime) {
+		burst = 0;
+		cout << "Time " << currentTime << ", P" << PID << ", Terminated" << endl;
+	}
 
 };
+
+void addToQueue(vector<Process> processVector, bool flag, vector <Process> expiredQueue) {
+	
+	if(processVector[currentVectorPosition].getArrival() == current)
+}
 
 void scheduler(vector <Process> Q1, vector <Process> Q2, bool flag, int currentTime, vector <Process> allProcess) {
 	if (numberOfProcess == 0) {
@@ -107,6 +120,8 @@ void scheduler(vector <Process> Q1, vector <Process> Q2, bool flag, int currentT
 			if()
 		}
 	}
+
+	//don't forget to increment positionOfVector after adding a process in the queue
 }
 
 void main() {
@@ -116,7 +131,7 @@ void main() {
 	int arrival_time;
 	int burst;
 	int priority;
-	string PID;
+	int PID;
 
 	vector <Process> processVector;
 	vector <Process> processQ1; //queues for locating processes, both needs to be sorted using the priorities
@@ -124,11 +139,7 @@ void main() {
 
 	if (file.is_open()) { //If the file is opened
 		while (file >> PID >> arrival_time >> burst >> priority) {
-			Process p = Process();
-			p.getPID() = PID;
-			p.getArrival() = arrival_time;
-			p.getBurst() = burst;
-			p.getPriority() = priority;
+			Process p(PID, arrival_time, burst, priority);
 			processVector.push_back(p);
 		}
 		file.close();
