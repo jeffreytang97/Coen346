@@ -13,6 +13,9 @@
 
 using namespace std;
 
+int numberOfProcess = 0;
+int currentVectorPosition = 0;
+
 class Process {
 
 private:
@@ -94,7 +97,7 @@ public:
 	void resumed(int currentTime) {
 		waitTime = currentTime - lastFinish;
 		burst = burst - timeQuantum;
-		cout << "Time " << arrival_time << ", P" << PID << ", Resumed, Granted " << timeQuantum << endl;
+		cout << "Time " << currentTime << ", P" << PID << ", Started, Granted " << timeQuantum << endl;
 	}
 	void terminated(int currentTime, Process p) {
 		//p.delete;
@@ -103,6 +106,24 @@ public:
 
 };
 
+void addToQueue(vector<Process> processVector, bool flag, vector <Process> expiredQueue) {
+	
+	if(processVector[currentVectorPosition].getArrival() == current)
+}
+
+void scheduler(vector <Process> Q1, vector <Process> Q2, bool flag, int currentTime, vector <Process> allProcess) {
+	if (numberOfProcess == 0) {
+		return;
+	}
+	else if (!flag) {
+		for (int i = 0; i < allProcess.size - 1; i++)
+		{
+			if()
+		}
+	}
+
+	//don't forget to increment positionOfVector after adding a process in the queue
+}
 
 void main() {
 	ifstream file("pbs_input.txt");
@@ -129,14 +150,4 @@ void main() {
 	}
 }
 
-bool checkActiveOrNot(vector<Process> queue) {
 
-	bool flag;
-
-	if (queue.empty())
-		flag = false;
-	else
-		flag = true;
-
-	return flag;
-}
