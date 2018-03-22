@@ -81,6 +81,7 @@ public:
 	void start(int currentTime) {
 		burst = burst - timeQuantum;
 		cout << "Time " << currentTime << ", P" << PID << ", Started, Granted " << timeQuantum << endl;
+		currentTime += timeQuantum;
 	}
 
 	void paused(int currentTime) {
@@ -88,15 +89,15 @@ public:
 	}
 
 	void arrived(int currentTime) {
-		cout << "Time " << currentTime << ", P" << PID << ", Arrived" << endl;
+		cout << "Time " << arrival_time << ", P" << PID << ", Arrived" << endl;
 	}
 	void resumed(int currentTime) {
 		waitTime = currentTime - lastFinish;
 		burst = burst - timeQuantum;
-		cout << "Time " << arrival_time << ", P" << PID << ", Started, Granted " << timeQuantum << endl;
+		cout << "Time " << arrival_time << ", P" << PID << ", Resumed, Granted " << timeQuantum << endl;
 	}
-	void terminated(int currentTime) {
-		burst = 0;
+	void terminated(int currentTime, Process p) {
+		//p.delete;
 		cout << "Time " << currentTime << ", P" << PID << ", Terminated" << endl;
 	}
 
