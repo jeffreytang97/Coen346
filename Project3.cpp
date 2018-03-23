@@ -130,7 +130,7 @@ void addToQueue(vector<Process> processVector, vector <Process> expiredQueue, in
 		sortingFunction(expiredQueue); //sort the queue by checking priority everytime a process is inserted
 		currentVectorPosition++;
 	}
-}
+}	
 
 bool activeOrNot(vector <Process> Q1, vector <Process> Q2) {
 	bool flag;
@@ -158,28 +158,35 @@ void scheduler(vector <Process> Q1, vector <Process> Q2, bool flag1, bool flag2,
 				Q2[i].start(currentTime);
 				if (Q2[i].getBurst() == 0) {
 					Q2[i].terminated(currentTime, Q2); //delete the object from Q2 vector
+					numberOfProcess--;
+
 				}
 				else
 					Q2[i].paused(currentTime);
 
 				mtx.unlock();
+				currentVectorPosition++;
 			}
 			else if (Q2[i].getStatus == "Arrived") {
 				mtx.lock();
 				addToQueue(processVector, Q1, currentTime);
 				if (Q2[i].getBurst() == 0) {
 					Q2[i].terminated(currentTime, Q2); //delete the object from Q2 vector
+					numberOfProcess--;
 				}
 				else
 					Q2[i].arrived(currentTime);
 
 				mtx.unlock();
+				currentVectorPosition++;
 			}
 			else if (Q2[i].getStatus == "Resumed") {
 				mtx.lock();
 				Q2[i].resumed(currentTime);
 				if (Q2[i].getBurst() == 0) {
 					Q2[i].terminated(currentTime, Q2); //delete the object from Q2 vector
+					numberOfProcess--;
+					currentVectorPosition++;
 				}
 				else {
 					if (Q2[i].granted == 2) {
@@ -190,6 +197,7 @@ void scheduler(vector <Process> Q1, vector <Process> Q2, bool flag1, bool flag2,
 					Q2[i].updated(currentTime);
 				}
 				mtx.unlock();
+				
 			}
 		}
 	}
@@ -202,28 +210,33 @@ void scheduler(vector <Process> Q1, vector <Process> Q2, bool flag1, bool flag2,
 				Q1[i].start(currentTime);
 				if (Q1[i].getBurst() == 0) {
 					Q1[i].terminated(currentTime, Q1); //delete the object from Q2 vector
+					numberOfProcess--;
 				}
 				else
 					Q1[i].paused(currentTime);
 
 				mtx.unlock();
+				currentVectorPosition++;
 			}
 			else if (Q1[i].getStatus == "Arrived") {
 				mtx.lock();
 				addToQueue(processVector, Q2, currentTime);
 				if (Q1[i].getBurst() == 0) {
 					Q1[i].terminated(currentTime, Q1); //delete the object from Q2 vector
+					numberOfProcess--;
 				}
 				else
 					Q1[i].arrived(currentTime);
 
 				mtx.unlock();
+				currentVectorPosition++;
 			}
 			else if (Q1[i].getStatus == "Resumed") {
 				mtx.lock();
 				Q1[i].resumed(currentTime);
 				if (Q1[i].getBurst() == 0) {
 					Q1[i].terminated(currentTime, Q1); //delete the object from Q2 vector
+					numberOfProcess--;
 				}
 				else {
 					if (Q1[i].granted == 2) {
@@ -234,6 +247,7 @@ void scheduler(vector <Process> Q1, vector <Process> Q2, bool flag1, bool flag2,
 					Q1[i].updated(currentTime);
 				}
 				mtx.unlock();
+				currentVectorPosition++;
 			}
 		}
 	}
@@ -258,6 +272,7 @@ void main() {
 		while (file >> PID >> arrival_time >> burst >> priority) {
 			Process p(PID, arrival_time, burst, priority);
 			processVector.push_back(p);
+			numberOfProcess++;
 		}
 		file.close();
 	}
@@ -270,16 +285,6 @@ void main() {
 	thread prioritycheduler(scheduler, processQ1, processQ2, flag1, flag2, time, processVector);
 
 	while (currentVectorPosition < numberOfProcess && time < 33000) {
-		if (flag1) { //if flag1 == true, then Q1 is active. So, insert process in Q2, the expired queue
-			addToQueue(processVector, processQ2, time);
-			flag1 = false; 
-			flag2 = true;
-		}
-		else {
-			addToQueue(processVector, processQ1, time);
-			flag1 = true;
-			flag2 = false;
-		}
 		scheduler(processQ1, processQ2, flag1, flag2, time, processVector); //time will be updated in the scheduler function
 	}
 }
