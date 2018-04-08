@@ -250,6 +250,8 @@ void main() {
 	int PID;
 	int time = 1000; //start time
 
+	cout << "Jeffrey Tang hello";
+	
 	vector <Process> processVector;
 	vector <Process> processQ1; //queues for locating processes, both needs to be sorted using the priorities
 	vector <Process> processQ2;
@@ -282,4 +284,5 @@ void main() {
 		}
 		scheduler(processQ1, processQ2, flag1, flag2, time, processVector); //time will be updated in the scheduler function
 	}
+	
 }
