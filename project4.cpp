@@ -11,8 +11,13 @@
 #include <algorithm>
 #include <mutex>
 #include <sstream>
+#include <cstddef> // for null
 
 using namespace std;
+
+int listOfLogicalAddress[1000];
+int pageTable[256]; //page table with 256 entries 
+int physicalMemory[256];
 
 struct TLB { //define an object for the TLB which contains 16 entries
 	int pageNumber = 0;
@@ -53,70 +58,58 @@ int concatenate(int frameNumber, int offset) {
 	return physicalAddress; //physical memory is now available!
 }
 
-void translation(int listOfLogicalAddress[], int pageTable[], int offset, int pageNumber, int frameNumber, TLB tlb[], int physicalAddress, int tlb_hit, int pageFault) {
+int getDataFromBackingStore(int pageNumber) {
+	FILE *f;
+	int *storage;
+
+	//open file in read mode
+	f = fopen("BACKING_STORE.bin", "r");
+
+	//a size of page is 256 bytes, so if we multiply by page number, we will get to the right page.
+	int locationOfPage = 256 * pageNumber;
+
+	//Looking for the location of the page
+	fseek(f, locationOfPage, SEEK_SET);
+
+	//Store data in temporary storage in memory
+	fread(storage, 1, 256, f);
+
+	int free_frame = getNextFreeFrame();
+	physicalMemory[free_frame] = *storage;
+
+	return free_frame;
+}
+
+int getNextFreeFrame() {
 	
-	bool found;
-	
-	for (int i = 0; i < sizeof(listOfLogicalAddress); i++)
+	for (int index = 0; index < 256; index++)
 	{
-		offset = bitMaskingOffset(listOfLogicalAddress[i]);
-		pageNumber = bitMaskingPageNum(listOfLogicalAddress[i]);
-
-		//search in TLB for a frame associated to the page number
-		for (int i = 0; i < 16; i++)
-		{
-			if ((pageNumber == tlb[i].pageNumber)) {
-				physicalAddress = concatenate(tlb[i].frameNumber, offset);
-				tlb_hit++;
-				found = true;
-				break;
-			}
-			else
-				found = false; 
-		}
-
-		//If cannot find, go to the page table. (tlb miss)
-		if (!found) {
-			frameNumber = pageTable[pageNumber]; //corresponding frame number at a certain page number location
-			physicalAddress = concatenate(frameNumber, offset);
-			found = true; 
-			
-			//Insert the frame number and page number in TBL
-			//Shift every value to the right first
-			for (int i = 15; i > 0; i--)
-			{
-				tlb[i].pageNumber = tlb[i - 1].pageNumber;
-				tlb[i].frameNumber = tlb[i - 1].frameNumber;
-			}
-
-			//Then, insert the frame number + page number in TBL from the pageTable
-			tlb[0].pageNumber = pageNumber;
-			tlb[1].frameNumber = frameNumber;
-		}
-
-		//If still not found, then there is a page fault.
-		if (!found) {
-			//Go and read through the backing_store bin file to locate the corresponding page
-			//Associate the frame number with the correct page number in the page table
-			//Also insert it in the TLB
-			pageFault++;
+		if (physicalMemory[index] == NULL) {
+			return index;
 		}
 	}
 }
 
+int pageFaultRate() {
+	return;
+}
+
+int tlbHitRate() {
+	return;
+}
+
 int main() {
 	
-	ifstream myfile("addresses.txt");
 	string logicalAddress;
-	int listOfLogicalAddress[1000];
 	TLB tlb[16]; //the TLB has 16 entries
-	int pageTable[256]; //page table with 256 entries 
 	int offset = 0;
 	int pageNumber = 0;
 	int frameNumber = 0;
 	int physicalAddress = 0;
 	int tlb_hit = 0;
-	int pageFault = 0;         
+	int pageFault = 0;  
+	bool found;
+	bool valid = false;
 
 	//Initialise every value of TLB to 0
 	for (int i = 0; i < 16; i++)
@@ -125,6 +118,7 @@ int main() {
 		tlb[i].frameNumber = 0;
 	}
 
+	ifstream myfile("addresses.txt"); //Opening file
 	if (myfile.is_open())
 	{
 		int i = 0;
@@ -140,7 +134,60 @@ int main() {
 		cout << "Unable to open file";
 	}                   
 
-	//translation();
+	//Translation execution
+	for (int i = 0; i < sizeof(listOfLogicalAddress); i++)
+	{
+		//Bit masking
+		offset = bitMaskingOffset(listOfLogicalAddress[i]);
+		pageNumber = bitMaskingPageNum(listOfLogicalAddress[i]);
+
+		//search in TLB for a frame associated to the page number
+		for (int i = 0; i < 16; i++)
+		{
+			if ((pageNumber == tlb[i].pageNumber)) {
+				physicalAddress = concatenate(tlb[i].frameNumber, offset);
+				tlb_hit++;
+				found = true;
+				break;
+			}
+			else
+				found = false;
+		}
+
+		//If not found in TLB
+		if (!found) { 
+			do {
+				if (pageTable[pageNumber] < 0) { // If not found in the pageTable, go grab the page in backing_store
+					pageFault++;
+					frameNumber = getDataFromBackingStore(pageNumber);
+					pageTable[pageNumber] = frameNumber;
+					//Then, start re-executing the process
+				}
+				else { //If frame exist at location of page number
+
+					int frameUsed = 0;
+					frameUsed = pageTable[pageNumber]; 
+					physicalAddress = concatenate(frameUsed, offset);
+					found = true;
+					valid = true;
+
+					//Insert the frame number and page number in TLB
+					//Shift every value to the right first
+					for (int i = 15; i > 0; i--)
+					{
+						tlb[i].pageNumber = tlb[i - 1].pageNumber;
+						tlb[i].frameNumber = tlb[i - 1].frameNumber;
+					}
+
+					//Then, insert the frame number + page number in TBL from the pageTable
+					tlb[0].pageNumber = pageNumber;
+					tlb[1].frameNumber = frameNumber;
+				}
+			}while (!valid); 
+		}
+	} 
+
+	//statistics output to do
 
 	for (int i = 0; i < 50; i++) //Just a test function to test the functionality of the input read file
 	{
