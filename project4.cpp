@@ -16,7 +16,7 @@ using namespace std;
 
 int listOfLogicalAddress[1000];
 int pageTable[256]; //page table with 256 entries 
-int physicalMemory[256];
+int physicalMemory[256*256];
 
 struct TLB { //define an object for the TLB which contains 16 entries
 	int pageNumber = 0;
@@ -41,7 +41,7 @@ int concatenate(int frameNumber, int offset) {
 	ostringstream convert;
 	convert << frameNumber;
 	string frame = convert.str();
-
+	
 	ostringstream c;
 	c << offset;
 	string off = c.str(); 
@@ -57,19 +57,19 @@ int concatenate(int frameNumber, int offset) {
 	return physicalAddress; //physical memory is now available!
 }
 
-int getNextFreeFrame() {
+/*int getNextFreeFrame() {
 
 	for (int index = 0; index < 256; index++)
 	{
-		if (physicalMemory[index] == NULL) {
+		if (physicalMemory[index*256] == NULL) {
 			return index;
 		}
 	}
-}
+}*/
 
-int getDataFromBackingStore(int pageNumber) {
+int getDataFromBackingStore(int pageNumber, int free_frame) {
 	FILE *f;
-	int *storage = 0;
+	char storage[256];
 
 	//open file in read mode
 	f = fopen("BACKING_STORE.bin", "r");
@@ -83,20 +83,28 @@ int getDataFromBackingStore(int pageNumber) {
 	//Store data in temporary storage in memory
 	fread(storage, 1, 256, f);
 
-	int free_frame = getNextFreeFrame();
-	physicalMemory[free_frame] = *storage; //store the page in a free frame
+	for (int i = 0; i < 256; i++)
+	{
+		physicalMemory[(free_frame*256) + i] = (int) storage[i]; //store the page in a free frame
+	}
+
+	fclose(f);
 
 	return free_frame;
 }
 
-int pageFaultRate() {
-	return 0;
+double pageFaultRate(double pageFault, double number_of_translation) {
+	double rate = 0.0;
+	rate = pageFault / number_of_translation;
+	return rate;
 }
 
-int tlbHitRate() {
-	return 0;
+double tlbHitRate(double tlb_hit, double number_of_translation) {
+	double rate = 0.0;
+	rate = tlb_hit / number_of_translation;
+	return rate;
 }
-
+             
 int main() {
 	
 	string logicalAddress;
@@ -105,16 +113,23 @@ int main() {
 	int pageNumber = 0;
 	int frameNumber = 0;
 	int physicalAddress = 0;
-	int tlb_hit = 0;
-	int pageFault = 0;  
+	double tlb_hit = 0;
+	double pageFault = 0;  
 	bool found;
 	bool valid = false;
+	double number_of_translation = 0;
+	int free_frame = 0;
 
 	//Initialise every value of TLB to 0
 	for (int i = 0; i < 16; i++)
 	{
 		tlb[i].pageNumber = 0;
 		tlb[i].frameNumber = 0;
+	}
+
+	for (int i = 0; i < 256; i++) //initialise page table
+	{
+		pageTable[i] = -1; 
 	}
 
 	ifstream myfile("addresses.txt"); //Opening file
@@ -134,8 +149,9 @@ int main() {
 	}                   
 
 	//Translation execution
-	for (int i = 0; i < sizeof(listOfLogicalAddress); i++)
+	for (int i = 0; i < 60; i++) //sizeof(listOfLogicalAddress)
 	{
+		number_of_translation++;
 		//Bit masking
 		offset = bitMaskingOffset(listOfLogicalAddress[i]);
 		pageNumber = bitMaskingPageNum(listOfLogicalAddress[i]);
@@ -143,7 +159,7 @@ int main() {
 		//search in TLB for a frame associated to the page number
 		for (int i = 0; i < 16; i++)
 		{
-			if ((pageNumber == tlb[i].pageNumber)) {
+			if (tlb[i].pageNumber == pageNumber) {
 				physicalAddress = concatenate(tlb[i].frameNumber, offset);
 				tlb_hit++;
 				found = true;
@@ -154,45 +170,62 @@ int main() {
 		}
 
 		//If not found in TLB
-		if (!found) { 
-			do {
-				if (pageTable[pageNumber] < 0) { // If not found in the pageTable, go grab the page in backing_store
-					pageFault++;
-					frameNumber = getDataFromBackingStore(pageNumber);
-					pageTable[pageNumber] = frameNumber;
-					//Then, start re-executing the process
-				}
-				else { //If frame exist at location of page number
+		if (pageTable[pageNumber] < 0 && !found) // If not found in the pageTable, go grab the page in backing_store
+		{
+			pageFault++;
+			frameNumber = getDataFromBackingStore(pageNumber, free_frame);
+			free_frame++; //go to next free frame in order
 
-					int frameUsed = 0;
-					frameUsed = pageTable[pageNumber]; 
-					physicalAddress = concatenate(frameUsed, offset);
-					found = true;
-					valid = true;
+			pageTable[pageNumber] = frameNumber;
+			physicalAddress = concatenate(frameNumber, offset);
+			//Insert the frame number and page number in TLB
+			//Shift every value to the right first
+			for (int i = 15; i > 0; i--)
+			{
+				tlb[i].pageNumber = tlb[i - 1].pageNumber;
+				tlb[i].frameNumber = tlb[i - 1].frameNumber;
+			}
 
-					//Insert the frame number and page number in TLB
-					//Shift every value to the right first
-					for (int i = 15; i > 0; i--)
-					{
-						tlb[i].pageNumber = tlb[i - 1].pageNumber;
-						tlb[i].frameNumber = tlb[i - 1].frameNumber;
-					}
-					              
-					//Then, insert the frame number + page number in TBL from the pageTable
-					tlb[0].pageNumber = pageNumber;
-					tlb[1].frameNumber = frameNumber;
-				}
-			}while (!valid); 
+			//Then, insert the frame number + page number in TBL from the pageTable
+			tlb[0].pageNumber = pageNumber;
+			tlb[1].frameNumber = frameNumber;
 		}
+		else //If frame exist at location of page number
+		{
+			int frameUsed = pageTable[pageNumber];
+			physicalAddress = concatenate(frameUsed, offset);
+
+			//Insert the frame number and page number in TLB
+			//Shift every value to the right first
+			for (int i = 15; i > 0; i--)
+			{
+				tlb[i].pageNumber = tlb[i - 1].pageNumber;
+				tlb[i].frameNumber = tlb[i - 1].frameNumber;
+			}
+
+			//Then, insert the frame number + page number in TBL from the pageTable
+			tlb[0].pageNumber = pageNumber;
+			tlb[1].frameNumber = frameNumber;
+		}
+
+		//show output
+		cout << "Virtual address: " << listOfLogicalAddress[i]
+			<< " Physical address: " << physicalAddress << " Value: " << physicalMemory[physicalAddress] << endl;
 	} 
+
+	cout << "Number of Translated Addresses = " << number_of_translation << endl;
+	cout << "Page faults = " << pageFault << endl;
+	cout << "Page Fault Rate = " << pageFaultRate(pageFault, number_of_translation) << endl;
+	cout << "TLB hits = " << tlb_hit << endl;
+	cout << "TLB Hit Rate = " << tlbHitRate(tlb_hit, number_of_translation) << endl;
 
 	//statistics output to do
 
-	for (int i = 0; i < 50; i++) //Just a test function to test the functionality of the input read file
+	/*for (int i = 0; i < 50; i++) //Just a test function to test the functionality of the input read file
 	{
 		cout << listOfLogicalAddress[i] << " " << bitMaskingOffset(listOfLogicalAddress[i]) << " " << bitMaskingPageNum(listOfLogicalAddress[i]) << endl;
-	}
-
+	}*/
+	
 	cin.get();
 	return 0;
 }
