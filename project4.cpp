@@ -57,7 +57,7 @@ int concatenate(int frameNumber, int offset) {
 	return physicalAddress; //physical memory is now available!
 }
 
-/*int getNextFreeFrame() {
+int getNextFreeFrame() {
 
 	for (int index = 0; index < 256; index++)
 	{
@@ -65,9 +65,9 @@ int concatenate(int frameNumber, int offset) {
 			return index;
 		}
 	}
-}*/
+}
 
-int getDataFromBackingStore(int pageNumber, int free_frame) {
+int getDataFromBackingStore(int pageNumber) {
 	FILE *f;
 	char storage[256];
 
@@ -83,6 +83,7 @@ int getDataFromBackingStore(int pageNumber, int free_frame) {
 	//Store data in temporary storage in memory
 	fread(storage, 1, 256, f);
 
+	int free_frame = getNextFreeFrame();
 	for (int i = 0; i < 256; i++)
 	{
 		physicalMemory[(free_frame*256) + i] = (int) storage[i]; //store the page in a free frame
@@ -118,7 +119,6 @@ int main() {
 	bool found;
 	bool valid = false;
 	double number_of_translation = 0;
-	int free_frame = 0;
 
 	//Initialise every value of TLB to 0
 	for (int i = 0; i < 16; i++)
@@ -148,8 +148,10 @@ int main() {
 		cout << "Unable to open file";
 	}                   
 
+	ofstream file("pbs_output.txt");
+
 	//Translation execution
-	for (int i = 0; i < 60; i++) //sizeof(listOfLogicalAddress)
+	for (int i = 0; i < 1000; i++) 
 	{
 		number_of_translation++;
 		//Bit masking
@@ -173,11 +175,10 @@ int main() {
 		if (pageTable[pageNumber] < 0 && !found) // If not found in the pageTable, go grab the page in backing_store
 		{
 			pageFault++;
-			frameNumber = getDataFromBackingStore(pageNumber, free_frame);
-			free_frame++; //go to next free frame in order
-
-			pageTable[pageNumber] = frameNumber;
+			frameNumber = getDataFromBackingStore(pageNumber);                          
 			physicalAddress = concatenate(frameNumber, offset);
+			pageTable[pageNumber] = frameNumber;
+			
 			//Insert the frame number and page number in TLB
 			//Shift every value to the right first
 			for (int i = 15; i > 0; i--)
@@ -209,9 +210,29 @@ int main() {
 		}
 
 		//show output
-		cout << "Virtual address: " << listOfLogicalAddress[i]
-			<< " Physical address: " << physicalAddress << " Value: " << physicalMemory[physicalAddress] << endl;
+		//cout << "Virtual address: " << listOfLogicalAddress[i]
+			//<< " Physical address: " << physicalAddress << " Value: " << physicalMemory[physicalAddress] << endl;
+
+		if (file.is_open())
+		{
+			file << "Virtual address: " << listOfLogicalAddress[i]
+				<< " Physical address: " << physicalAddress << " Value: " << physicalMemory[physicalAddress] << endl;
+		}
+		else cout << "Unable to open file";
 	} 
+
+	if (file.is_open())
+	{
+		file << "Number of Translated Addresses = " << number_of_translation << endl;
+		file << "Page faults = " << pageFault << endl;
+		file << "Page Fault Rate = " << pageFaultRate(pageFault, number_of_translation) << endl;
+		file << "TLB hits = " << tlb_hit << endl;
+		file << "TLB Hit Rate = " << tlbHitRate(tlb_hit, number_of_translation) << endl;
+	}
+	else 
+		cout << "Unable to open file";
+
+	myfile.close();
 
 	cout << "Number of Translated Addresses = " << number_of_translation << endl;
 	cout << "Page faults = " << pageFault << endl;
