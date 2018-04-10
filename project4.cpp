@@ -1,12 +1,11 @@
+
+#define _CRT_SECURE_NO_DEPRECATE
+#include <stdio.h>
 #include <iostream>
 #include <fstream>
-//ofstream --> Stream class to write file
-//ifstream --> Stream class to read from file
-//fstream --> Stream class to both read and write from/to file
 #include <string>
 #include <vector>
 #include <math.h>
-#include <ctime>
 #include <cstdlib>
 #include <algorithm>
 #include <mutex>
@@ -58,9 +57,19 @@ int concatenate(int frameNumber, int offset) {
 	return physicalAddress; //physical memory is now available!
 }
 
+int getNextFreeFrame() {
+
+	for (int index = 0; index < 256; index++)
+	{
+		if (physicalMemory[index] == NULL) {
+			return index;
+		}
+	}
+}
+
 int getDataFromBackingStore(int pageNumber) {
 	FILE *f;
-	int *storage;
+	int *storage = 0;
 
 	//open file in read mode
 	f = fopen("BACKING_STORE.bin", "r");
@@ -75,27 +84,17 @@ int getDataFromBackingStore(int pageNumber) {
 	fread(storage, 1, 256, f);
 
 	int free_frame = getNextFreeFrame();
-	physicalMemory[free_frame] = *storage;
+	physicalMemory[free_frame] = *storage; //store the page in a free frame
 
 	return free_frame;
 }
 
-int getNextFreeFrame() {
-	
-	for (int index = 0; index < 256; index++)
-	{
-		if (physicalMemory[index] == NULL) {
-			return index;
-		}
-	}
-}
-
 int pageFaultRate() {
-	return;
+	return 0;
 }
 
 int tlbHitRate() {
-	return;
+	return 0;
 }
 
 int main() {
@@ -178,7 +177,7 @@ int main() {
 						tlb[i].pageNumber = tlb[i - 1].pageNumber;
 						tlb[i].frameNumber = tlb[i - 1].frameNumber;
 					}
-
+					              
 					//Then, insert the frame number + page number in TBL from the pageTable
 					tlb[0].pageNumber = pageNumber;
 					tlb[1].frameNumber = frameNumber;
