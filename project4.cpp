@@ -4,11 +4,8 @@
 #include <iostream>
 #include <fstream>
 #include <string>
-#include <vector>
 #include <math.h>
 #include <cstdlib>
-#include <algorithm>
-#include <mutex>
 #include <sstream>
 #include <cstddef> // for null
 
@@ -35,24 +32,9 @@ int bitMaskingPageNum(int logicalAddress) {//function to get the page number
 	return pageNumber;
 }
 
-int concatenate(int frameNumber, int offset) {
+int concatenate(int pageNumber, int offset) {
 
-	//convert frame number and offset to string so we can concatenate it.
-	ostringstream convert;
-	convert << frameNumber;
-	string frame = convert.str();
-	
-	ostringstream c;
-	c << offset;
-	string off = c.str(); 
-
-	//Concatenate frame number + offset (16 bits now)
-	string concat = frame + off;
-
-	//Now, convert back string to int.
-	stringstream conversion(concat);
-	int physicalAddress = 0;
-	conversion >> physicalAddress;
+	int physicalAddress = (pageNumber * 256) + offset;
 
 	return physicalAddress; //physical memory is now available!
 }
@@ -162,7 +144,7 @@ int main() {
 		for (int i = 0; i < 16; i++)
 		{
 			if (tlb[i].pageNumber == pageNumber) {
-				physicalAddress = concatenate(tlb[i].frameNumber, offset);
+				physicalAddress = concatenate(pageNumber, offset);
 				tlb_hit++;
 				found = true;
 				break;
@@ -193,8 +175,8 @@ int main() {
 		}
 		else //If frame exist at location of page number
 		{
-			int frameUsed = pageTable[pageNumber];
-			physicalAddress = concatenate(frameUsed, offset);
+			//int frameUsed = pageTable[pageNumber];
+			physicalAddress = concatenate(pageNumber, offset);
 
 			//Insert the frame number and page number in TLB
 			//Shift every value to the right first
@@ -209,9 +191,7 @@ int main() {
 			tlb[1].frameNumber = frameNumber;
 		}
 
-		//show output
-		//cout << "Virtual address: " << listOfLogicalAddress[i]
-			//<< " Physical address: " << physicalAddress << " Value: " << physicalMemory[physicalAddress] << endl;
+		//Write output to a file called pbs_output.txt
 
 		if (file.is_open())
 		{
@@ -234,18 +214,12 @@ int main() {
 
 	myfile.close();
 
+	//Only a test to showcase the results
 	cout << "Number of Translated Addresses = " << number_of_translation << endl;
 	cout << "Page faults = " << pageFault << endl;
 	cout << "Page Fault Rate = " << pageFaultRate(pageFault, number_of_translation) << endl;
 	cout << "TLB hits = " << tlb_hit << endl;
 	cout << "TLB Hit Rate = " << tlbHitRate(tlb_hit, number_of_translation) << endl;
-
-	//statistics output to do
-
-	/*for (int i = 0; i < 50; i++) //Just a test function to test the functionality of the input read file
-	{
-		cout << listOfLogicalAddress[i] << " " << bitMaskingOffset(listOfLogicalAddress[i]) << " " << bitMaskingPageNum(listOfLogicalAddress[i]) << endl;
-	}*/
 	
 	cin.get();
 	return 0;
