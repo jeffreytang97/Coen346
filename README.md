@@ -1,8 +1,10 @@
 # Coen346
 
-We may use semaphores for wait(), etc. 
-One process at a time.
-Use threads.
+Goal: This programming project involves implementing and simulating a priority-based scheduler in a system with
+a single processor
+
+Language: C++
+--------------------------------------------------------------------------------------------------------------------------------------
 
 To do list / additional notes:
 
